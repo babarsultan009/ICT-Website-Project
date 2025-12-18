@@ -1,0 +1,50 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 40px;
+  background: var(--nav);
+  position: relative;
+}
+
+.nav-center {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex: 1;
+}
+
+.nav-center a {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: bold;
+  position: relative;
+  padding: 5px 0;
+  transition: all 0.3s ease;
+}
+
+/* Underline animation */
+.nav-center a::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 3px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--accent);
+  transition: 0.3s;
+  border-radius: 2px;
+}
+
+.nav-center a:hover::after {
+  width: 100%;
+}
+
+/* Hover scale effect */
+.nav-center a:hover {
+  color: var(--accent);
+  transform: scale(1.1);
+  background: rgba(29, 185, 84, 0.1); /* optional highlight */
+  padding: 5px 10px;
+  border-radius: 5px;
+}
