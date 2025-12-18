@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ECHO MUSE</title>
+
+<style>
+:root{
+  --bg:#121212;
+  --nav:#1e1e1e;
+  --card:#181818;
+  --text:white;
+  --accent:#701db9;
+}
+.light{
+  --bg:#f5f5f5;
+  --nav:#ddd;
+  --card:#fff;
+  --text:#000;
+}
+
+body{
+  margin:0;
+  font-family:Arial;
+  background:var(--bg);
+  color:var(--text);
+  transition:.3s;
+}
+
+/* NAV */
+.navbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 40px;
+  background:var(--nav);
+}
+.navbar h2{color:var(--accent)}
+.toggle{
+  background:var(--accent);
+  color:white;
+  padding:6px 14px;
+  border-radius:20px;
+  cursor:pointer;
+}
+
+/* NAV LINKS CENTER */
+.nav-center {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex: 1;
+}
+.nav-center a {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: bold;
+  position: relative;
+  padding: 5px 0;
+  transition: all 0.3s ease;
+}
+.nav-center a::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 3px;
+  bottom: 0;
+  left: 0;
+  background-color: var(--accent);
+  transition: 0.3s;
+  border-radius: 2px;
+}
+.nav-center a:hover::after { width: 100%; }
+.nav-center a:hover { color: var(--accent); transform: scale(1.1); background: rgba(29,185,84,0.1); padding: 5px 10px; border-radius:5px; }
+
+/* LAYOUT */
+.container{
+  display:grid;
+  grid-template-columns:1fr 3fr 1fr;
+  gap:20px;
+  padding:20px 40px;
+}
+@media(max-width:900px){
+  .container{grid-template-columns:1fr}
+}
+
+/* SIDEBAR */
+.sidebar{
+  background:var(--nav);
+  padding:20px;
+  border-radius:20px;
+}
+.sidebar img{
+  width:100%;
+  border-radius:15px;
+}
+
+/* SONG CARDS */
+.song-row{
+  display:flex;
+  gap:20px;
+  overflow-x:auto;
+}
+.song-card{
+  min-width:180px;
+  background:var(--card);
+  border-radius:20px;
+  cursor:pointer;
+  transition:.3s;
+}
+.song-card:hover{transform:scale(1.05)}
+.song-card img{
+  width:100%;
+  height:150px;
+  object-fit:cover;
+  border-radius:20px 20px 0 0;
+}
+.song-card span{
+  display:block;
+  text-align:center;
+  padding:10px;
+  font-weight:bold;
+}
+
+/* OTHER PLAYLISTS CARDS */
+.playlist-card{
+  min-width:160px;
+  background:var(--card);
+  border-radius:20px;
+  cursor:pointer;
+  transition:.3s;
+  text-align:center;
+}
+.playlist-card:hover{transform:scale(1.05)}
+.playlist-card img{
+  width:100%;
+  height:120px;
+  object-fit:cover;
+  border-radius:20px 20px 0 0;
+}
+.playlist-card span{
+  display:block;
+  padding:8px;
+  font-weight:bold;
+}
+
+/* PLAYER */
+.player{
+  position:fixed;
+  bottom:-160px;
+  left:0;
+  width:100%;
+  background:var(--nav);
+  padding:15px 40px;
+  transition:.4s;
+}
+.player.show{bottom:0}
+
+.player-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.player-info{
+  display:flex;
+  gap:15px;
+  align-items:center;
+}
+.player-info img{
+  width:60px;
+  height:60px;
+  border-radius:8px;
+}
+
+/* CONTROLS */
+.controls button{
+  background:var(--accent);
+  border:none;
+  color:white;
+  padding:10px;
+  border-radius:50%;
+  cursor:pointer;
+  margin:0 5px;
+}
+
+/* EQUALIZER */
+.eq{
+  display:flex;
+  gap:4px;
+  align-items:flex-end;
+}
+.eq span{
+  width:5px;
+  height:10px;
+  background:var(--accent);
+  animation:equalize 1s infinite;
+}
+.eq span:nth-child(2){animation-delay:.2s}
+.eq span:nth-child(3){animation-delay:.4s}
+.eq span:nth-child(4){animation-delay:.6s}
+.eq span:nth-child(5){animation-delay:.8s}
+.eq.paused span{animation-play-state:paused}
+
+@keyframes equalize{
+  0%{height:10px}
+  50%{height:35px}
+  100%{height:10px}
+}
+
+/* PROGRESS */
+.progress{
+  width:100%;
+  height:6px;
+  background:#555;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:10px;
+}
+.progress-bar{
+  height:6px;
+  width:0%;
+  background:var(--accent);
+  border-radius:10px;
+}
+
+/* VOLUME */
+.volume{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+input[type=range]{cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <h2>ECHO MUSE</h2>
+  
+  <div class="nav-center">
+    <a href="mainpage.html">My Playlist</a>
+    <a href="tophits.html">Top Hits</a>
+    <a href="trending.html">Trending</a>
+    <a href="Aboutus.html">About Us</a>
+  </div>
+
+  <div class="toggle" onclick="toggleTheme()">Dark / Light</div>
+</div>
+
+<!-- ABOUT US SECTION -->
+<div class="container">
+  <div class="sidebar"></div> <!-- Empty column for spacing -->
+
+  <div class="about-us" style="background:var(--nav); padding:20px; border-radius:20px;">
+    <h2 style="text-align:center; margin-bottom:20px; color:var(--accent);">About Us</h2>
+    
+    <div class="team-members" style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+      
+      <!-- Member 1 -->
+      <div class="team-card" style="background:var(--card); padding:15px; border-radius:15px; text-align:center; width:200px; transition:0.3s; cursor:pointer;">
+        <alt="Babar Sultan" style="width:100%; border-radius:15px; margin-bottom:10px;">
+        <h3>Babar Sultan</h3>
+        <p>Team Leader</p>
+        <p>Role: UI/UX Designer</p>
+      </div>
+      
+      <!-- Member 2 -->
+      <div class="team-card" style="background:var(--card); padding:15px; border-radius:15px; text-align:center; width:200px; transition:0.3s; cursor:pointer;">
+        <alt="Zulkifl Khalid" style="width:100%; border-radius:15px; margin-bottom:10px;">
+        <h3>Zulkifl Khalid</h3>
+        <p>Team Member</p>
+        <p>Role: Frontend Developer</p>
+      </div>
+      
+      <!-- Member 3 -->
+      <div class="team-card" style="background:var(--card); padding:15px; border-radius:15px; text-align:center; width:200px; transition:0.3s; cursor:pointer;">
+        <alt="Abyan Yar Khan" style="width:100%; border-radius:15px; margin-bottom:10px;">
+        <h3>Abyan Yar Khan</h3>
+        <p>Team Member</p>
+        <p>Role: Backend Developer</p>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="sidebar"></div> <!-- Empty column for spacing -->
+</div>
+
+<!-- Optional Hover Animation for Team Cards -->
+<style>
+.team-card:hover {
+  transform: scale(1.05);
+  background: rgba(29,185,84,0.1);
+}
+</style>
