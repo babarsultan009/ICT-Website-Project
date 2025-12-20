@@ -1,10 +1,9 @@
 <script>
-/* ===================== CONFIG ===================== */
+
 const clientId = "03db9a5291cf4a0d9e7a9110e2d02799";
 const redirectUri = "https://babarsultan009.github.io/ICT-Website-Project/callback.html";
 const scopes = "user-read-private playlist-read-private";
 
-/* ===================== AUTH HELPERS ===================== */
 function generateRandomString(length) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   return Array.from(crypto.getRandomValues(new Uint8Array(length)))
@@ -24,7 +23,6 @@ function base64encode(input) {
     .replace(/\//g, "_");
 }
 
-/* ===================== LOGIN ===================== */
 async function login() {
   const verifier = generateRandomString(64);
   localStorage.setItem("verifier", verifier);
@@ -45,7 +43,6 @@ async function login() {
   window.location.href = authUrl;
 }
 
-/* ===================== CALLBACK ===================== */
 async function handleRedirect() {
   const code = new URLSearchParams(window.location.search).get("code");
   const verifier = localStorage.getItem("verifier");
@@ -69,7 +66,6 @@ async function handleRedirect() {
   window.location.replace("dashboard.html");
 }
 
-/* ===================== REFRESH TOKEN ===================== */
 async function refreshAccessToken() {
   const refreshToken = localStorage.getItem("refresh_token");
   if (!refreshToken) return false;
@@ -92,7 +88,6 @@ async function refreshAccessToken() {
   return false;
 }
 
-/* ===================== AUTH GUARD ===================== */
 async function requireAuth() {
   let token = localStorage.getItem("access_token");
   if (!token) {
@@ -101,19 +96,15 @@ async function requireAuth() {
   }
 }
 
-/* ===================== LOGOUT ===================== */
 function logout() {
   localStorage.clear();
   window.location.replace("index.html");
 }
-
-/* ===================== LOADING UI ===================== */
 function showLoader(show) {
   const loader = document.getElementById("loader");
   if (loader) loader.style.display = show ? "flex" : "none";
 }
 
-/* ===================== DASHBOARD ===================== */
 async function loadDashboard() {
   await requireAuth();
   showLoader(true);
@@ -150,7 +141,6 @@ async function loadDashboard() {
   showLoader(false);
 }
 
-/* ===================== SEARCH ===================== */
 let currentFilter = "all";
 let timeout = null;
 
@@ -199,3 +189,4 @@ function searchSpotify() {
   }, 400);
 }
 </script>
+
