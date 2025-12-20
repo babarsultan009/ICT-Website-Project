@@ -76,6 +76,19 @@ async function handleRedirect() {
 // DASHBOARD
 async function loadDashboard() {
   const token = localStorage.getItem("access_token");
+  if (!token) return;
+
+  const profileDiv = document.getElementById("profile");
+  const playlistsDiv = document.getElementById("playlists");
+
+  if (!profileDiv || !playlistsDiv) return;
+
+  // fetch profile...
+}
+
+  async function loadDashboard() {
+  const token = localStorage.getItem("access_token");
+  if (!token) return;
 
   // PROFILE
   const profileRes = await fetch("https://api.spotify.com/v1/me", {
@@ -83,15 +96,14 @@ async function loadDashboard() {
   });
   const profile = await profileRes.json();
 
-  document.getElementById("profile").innerHTML = `
-   const image = profile.images.length
-  ? profile.images[0].url
-  : "https://via.placeholder.com/80";
+  const image = profile.images?.length
+    ? profile.images[0].url
+    : "https://via.placeholder.com/80";
 
-document.getElementById("profile").innerHTML = `
-  <img src="${image}">
-  <h2>${profile.display_name}</h2>
-`;
+  document.getElementById("profile").innerHTML = `
+    <img src="${image}">
+    <h2>${profile.display_name}</h2>
+  `;
 
   // PLAYLISTS
   const playlistRes = await fetch("https://api.spotify.com/v1/me/playlists", {
@@ -112,4 +124,5 @@ document.getElementById("profile").innerHTML = `
       </div>
     `).join("");
 }
+
 
