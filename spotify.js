@@ -1,3 +1,9 @@
+function requireAuth() {
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    window.location.replace("index.html");
+  }
+}
 const clientId = "03db9a5291cf4a0d9e7a9110e2d02799";
 const redirectUri = "https://babarsultan009.github.io/ICT-Website-Project/callback.html";
 const scopes = "user-read-private playlist-read-private";
@@ -78,9 +84,14 @@ async function loadDashboard() {
   const profile = await profileRes.json();
 
   document.getElementById("profile").innerHTML = `
-    <img src="${profile.images[0]?.url}">
-    <h2>${profile.display_name}</h2>
-  `;
+   const image = profile.images.length
+  ? profile.images[0].url
+  : "https://via.placeholder.com/80";
+
+document.getElementById("profile").innerHTML = `
+  <img src="${image}">
+  <h2>${profile.display_name}</h2>
+`;
 
   // PLAYLISTS
   const playlistRes = await fetch("https://api.spotify.com/v1/me/playlists", {
@@ -101,3 +112,4 @@ async function loadDashboard() {
       </div>
     `).join("");
 }
+
