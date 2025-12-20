@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Download</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: white;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    padding: 20px;
+    text-align: center;
+    background: #781db9;
+  }
+  .search-bar {
+    margin: 20px auto;
+    text-align: center;
+  }
+  input[type="text"] {
+    padding: 10px;
+    width: 300px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+  }
+  .playlist-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px;
+    gap: 20px;
+  }
+  .playlist-card {
+    background: #181818;
+    padding: 15px;
+    width: 200px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .playlist-card:hover {
+    transform: scale(1.05);
+  }
+  iframe {
+    display: block;
+    margin: 30px auto;
+    width: 80%;
+    height: 500px;
+    border: none;
+    border-radius: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ECHO MUSE</h1>
+  <button onclick="goBack()"
+  style="
+    background:#63b91d;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:25px;
+    cursor:pointer;
+    margin-bottom:20px;
+    font-size:14px;
+    float: left;  /* Aligns button to the left */
+  ">
+  ⬅ Back to Main Page
+</button>
+
+</header>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search playlists...">
+</div>
+
+<div class="playlist-list" id="playlistList">
+  <!-- Playlist cards will be generated here -->
+</div>
+
+<iframe id="playlistPlayer" src=""></iframe>
+
+<script>
+// Example playlists scraped from TheSufi.com (replace with real links)
+const playlists = [
+  { name: "Sufi Hits", url: "https://www.thesufi.com/playlist/sufi-hits" },
+  { name: "Spiritual Journey", url: "https://www.thesufi.com/playlist/spiritual-journey" },
+  { name: "Mystic Rhythms", url: "https://www.thesufi.com/playlist/mystic-rhythms" },
+  { name: "Devotional Songs", url: "https://www.thesufi.com/playlist/devotional-songs" },
+];
+
+// Function to display playlists
+function displayPlaylists(list) {
+  const container = document.getElementById("playlistList");
+  container.innerHTML = "";
+  list.forEach(playlist => {
+    const card = document.createElement("div");
+    card.className = "playlist-card";
+    card.innerText = playlist.name;
+    card.onclick = () => {
+      document.getElementById("playlistPlayer").src = playlist.url;
+    };
+    container.appendChild(card);
+  });
+}
+
+// Initial display
+displayPlaylists(playlists);
+
+// Search functionality
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  const query = e.target.value.toLowerCase();
+  const filtered = playlists.filter(p => p.name.toLowerCase().includes(query));
+  displayPlaylists(filtered);
+});
+</script>
+<div class="playlist-list" id="playlistList"></div>
+<iframe id="playlistPlayer" src=""></iframe>
+
+<script>
+async function loadPlaylists() {
+  try {
+    const res = await fetch('http://localhost:3000/playlists');
+    const playlists = await res.json();
+
+    const container = document.getElementById("playlistList");
+    container.innerHTML = "";
+
+    playlists.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "playlist-card";
+      card.innerText = p.name;
+      card.onclick = () => {
+        document.getElementById("playlistPlayer").src = p.url;
+      };
+      container.appendChild(card);
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById("searchInput");
+    searchInput.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = playlists.filter(p => p.name.toLowerCase().includes(query));
+      container.innerHTML = "";
+      filtered.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "playlist-card";
+        card.innerText = p.name;
+        card.onclick = () => document.getElementById("playlistPlayer").src = p.url;
+        container.appendChild(card);
+      });
+    });
+
+  } catch(err) {
+    console.error('Failed to load playlists:', err);
+  }
+}
+
+loadPlaylists();
+</script>
+<script>
+function goBack() {
+  window.location.href = "index.html"; 
+  // or "mainpage.html" if that is your main page
+}
+</script>
+
+
+
+</body>
+</html>
