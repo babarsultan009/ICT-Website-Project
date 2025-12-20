@@ -1,13 +1,10 @@
-function requireAuth() {
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    window.location.replace("index.html");
-  }
-}
+<script>
+/* ===================== CONFIG ===================== */
 const clientId = "03db9a5291cf4a0d9e7a9110e2d02799";
 const redirectUri = "https://babarsultan009.github.io/ICT-Website-Project/callback.html";
 const scopes = "user-read-private playlist-read-private";
 
+/* ===================== AUTH HELPERS ===================== */
 function generateRandomString(length) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   return Array.from(crypto.getRandomValues(new Uint8Array(length)))
@@ -17,8 +14,7 @@ function generateRandomString(length) {
 
 async function sha256(plain) {
   const encoder = new TextEncoder();
-  const data = encoder.encode(plain);
-  return crypto.subtle.digest("SHA-256", data);
+  return crypto.subtle.digest("SHA-256", encoder.encode(plain));
 }
 
 function base64encode(input) {
@@ -28,12 +24,12 @@ function base64encode(input) {
     .replace(/\//g, "_");
 }
 
-// LOGIN
+/* ===================== LOGIN ===================== */
 async function login() {
-  const codeVerifier = generateRandomString(64);
-  localStorage.setItem("verifier", codeVerifier);
+  const verifier = generateRandomString(64);
+  localStorage.setItem("verifier", verifier);
 
-  const hashed = await sha256(codeVerifier);
+  const hashed = await sha256(verifier);
   const challenge = base64encode(hashed);
 
   const authUrl = new URL("https://accounts.spotify.com/authorize");
@@ -46,17 +42,15 @@ async function login() {
     code_challenge: challenge
   });
 
-  window.location = authUrl;
+  window.location.href = authUrl;
 }
 
-// CALLBACK
+/* ===================== CALLBACK ===================== */
 async function handleRedirect() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get("code");
-
+  const code = new URLSearchParams(window.location.search).get("code");
   const verifier = localStorage.getItem("verifier");
 
-  const result = await fetch("https://accounts.spotify.com/api/token", {
+  const res = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -68,138 +62,140 @@ async function handleRedirect() {
     })
   });
 
-  const data = await result.json();
+  const data = await res.json();
   localStorage.setItem("access_token", data.access_token);
-  window.location = "dashboard.html";
+  localStorage.setItem("refresh_token", data.refresh_token);
+
+  window.location.replace("dashboard.html");
 }
 
-// DASHBOARD
+/* ===================== REFRESH TOKEN ===================== */
+async function refreshAccessToken() {
+  const refreshToken = localStorage.getItem("refresh_token");
+  if (!refreshToken) return false;
+
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      grant_type: "refresh_token",
+      refresh_token: refreshToken
+    })
+  });
+
+  const data = await res.json();
+  if (data.access_token) {
+    localStorage.setItem("access_token", data.access_token);
+    return true;
+  }
+  return false;
+}
+
+/* ===================== AUTH GUARD ===================== */
+async function requireAuth() {
+  let token = localStorage.getItem("access_token");
+  if (!token) {
+    const ok = await refreshAccessToken();
+    if (!ok) window.location.replace("index.html");
+  }
+}
+
+/* ===================== LOGOUT ===================== */
+function logout() {
+  localStorage.clear();
+  window.location.replace("index.html");
+}
+
+/* ===================== LOADING UI ===================== */
+function showLoader(show) {
+  const loader = document.getElementById("loader");
+  if (loader) loader.style.display = show ? "flex" : "none";
+}
+
+/* ===================== DASHBOARD ===================== */
 async function loadDashboard() {
+  await requireAuth();
+  showLoader(true);
+
   const token = localStorage.getItem("access_token");
-  if (!token) return;
 
-  const profileDiv = document.getElementById("profile");
-  const playlistsDiv = document.getElementById("playlists");
-
-  if (!profileDiv || !playlistsDiv) return;
-
-  // fetch profile...
-}
-
-  async function loadDashboard() {
-  const token = localStorage.getItem("access_token");
-  if (!token) return;
-
-  // PROFILE
+  /* PROFILE */
   const profileRes = await fetch("https://api.spotify.com/v1/me", {
     headers: { Authorization: `Bearer ${token}` }
   });
   const profile = await profileRes.json();
 
-  const image = profile.images?.length
-    ? profile.images[0].url
-    : "https://via.placeholder.com/80";
-
   document.getElementById("profile").innerHTML = `
-    <img src="${image}">
+    <img src="${profile.images?.[0]?.url || "https://via.placeholder.com/80"}">
     <h2>${profile.display_name}</h2>
+    <button onclick="logout()">Logout</button>
   `;
-let currentFilter = "all";
-let searchTimeout = null;
 
-function setFilter(type){
-  currentFilter = type;
-  searchSpotifyLive();
-}
-
-async function searchSpotifyLive() {
-  const query = document.getElementById("searchInput").value.trim();
-  if (!query) {
-    document.getElementById("searchResults").innerHTML = "";
-    return;
-  }
-
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(async () => {
-
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
-
-    let type = "track,playlist";
-    if (currentFilter === "track") type = "track";
-    if (currentFilter === "playlist") type = "playlist";
-
-    const res = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=${type}&limit=6`,
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    );
-
-    const data = await res.json();
-    let html = "";
-
-    // SONGS
-    if (data.tracks?.items?.length) {
-      html += `<h3>Songs</h3>`;
-      data.tracks.items.forEach(track => {
-        html += `
-          <div class="search-card">
-            <strong>${track.name}</strong> – ${track.artists[0].name}
-            <iframe
-              src="https://open.spotify.com/embed/track/${track.id}"
-              width="100%" height="80"
-              frameborder="0"
-              allow="encrypted-media">
-            </iframe>
-          </div>
-        `;
-      });
-    }
-
-    // PLAYLISTS
-    if (data.playlists?.items?.length) {
-      html += `<h3>Playlists</h3>`;
-      data.playlists.items.forEach(pl => {
-        html += `
-          <div class="search-card">
-            <strong>${pl.name}</strong>
-            <iframe
-              src="https://open.spotify.com/embed/playlist/${pl.id}"
-              width="100%" height="80"
-              frameborder="0"
-              allow="encrypted-media">
-            </iframe>
-          </div>
-        `;
-      });
-    }
-
-    document.getElementById("searchResults").innerHTML = html;
-
-  }, 500); // debounce
-}
-
-  
-     // PLAYLISTS
-  const playlistRes = await fetch("https://api.spotify.com/v1/me/playlists", {
+  /* PLAYLISTS */
+  const plRes = await fetch("https://api.spotify.com/v1/me/playlists", {
     headers: { Authorization: `Bearer ${token}` }
   });
-  const playlists = await playlistRes.json();
+  const playlists = await plRes.json();
 
   document.getElementById("playlists").innerHTML =
     playlists.items.map(p => `
       <div class="playlist">
         <h3>${p.name}</h3>
-        <iframe
-          src="https://open.spotify.com/embed/playlist/${p.id}"
-          width="100%" height="80"
-          frameborder="0"
-          allow="encrypted-media">
-        </iframe>
+        <iframe src="https://open.spotify.com/embed/playlist/${p.id}"
+          width="100%" height="80" allow="encrypted-media"></iframe>
       </div>
     `).join("");
+
+  showLoader(false);
 }
 
+/* ===================== SEARCH ===================== */
+let currentFilter = "all";
+let timeout = null;
 
+function setFilter(type) {
+  currentFilter = type;
+  searchSpotify();
+}
 
+function searchSpotify() {
+  clearTimeout(timeout);
+  timeout = setTimeout(async () => {
+    const q = document.getElementById("searchInput").value.trim();
+    if (!q) return (searchResults.innerHTML = "");
+
+    const token = localStorage.getItem("access_token");
+    let type = currentFilter === "track" ? "track" :
+               currentFilter === "playlist" ? "playlist" : "track,playlist";
+
+    const res = await fetch(
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=${type}&limit=6`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    const data = await res.json();
+    let html = "";
+
+    data.tracks?.items?.forEach(t => {
+      html += `
+        <div class="search-card">
+          <b>${t.name}</b> – ${t.artists[0].name}
+          <iframe src="https://open.spotify.com/embed/track/${t.id}"
+            width="100%" height="80"></iframe>
+        </div>`;
+    });
+
+    data.playlists?.items?.forEach(p => {
+      html += `
+        <div class="search-card">
+          <b>${p.name}</b>
+          <iframe src="https://open.spotify.com/embed/playlist/${p.id}"
+            width="100%" height="80"></iframe>
+        </div>`;
+    });
+
+    searchResults.innerHTML = html;
+  }, 400);
+}
+</script>
