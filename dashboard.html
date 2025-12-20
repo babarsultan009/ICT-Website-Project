@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spotify Dashboard</title>
+  <style>
+    body {
+      background:#121212;
+      color:white;
+      font-family:Arial;
+      padding:20px;
+    }
+    .profile {
+      display:flex;
+      align-items:center;
+      gap:20px;
+    }
+    img {
+      border-radius:50%;
+      width:80px;
+    }
+    .playlist {
+      margin-top:20px;
+      background:#181818;
+      padding:15px;
+      border-radius:10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="profile" id="profile"></div>
+<h2>Your Playlists</h2>
+<div id="playlists"></div>
+
+<script src="spotify.js"></script>
+<script>
+  loadDashboard();
+</script>
+
+</body>
+</html>
