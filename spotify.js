@@ -104,8 +104,84 @@ async function loadDashboard() {
     <img src="${image}">
     <h2>${profile.display_name}</h2>
   `;
+let currentFilter = "all";
+let searchTimeout = null;
 
-  // PLAYLISTS
+function setFilter(type){
+  currentFilter = type;
+  searchSpotifyLive();
+}
+
+async function searchSpotifyLive() {
+  const query = document.getElementById("searchInput").value.trim();
+  if (!query) {
+    document.getElementById("searchResults").innerHTML = "";
+    return;
+  }
+
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(async () => {
+
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    let type = "track,playlist";
+    if (currentFilter === "track") type = "track";
+    if (currentFilter === "playlist") type = "playlist";
+
+    const res = await fetch(
+      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=${type}&limit=6`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    const data = await res.json();
+    let html = "";
+
+    // SONGS
+    if (data.tracks?.items?.length) {
+      html += `<h3>Songs</h3>`;
+      data.tracks.items.forEach(track => {
+        html += `
+          <div class="search-card">
+            <strong>${track.name}</strong> – ${track.artists[0].name}
+            <iframe
+              src="https://open.spotify.com/embed/track/${track.id}"
+              width="100%" height="80"
+              frameborder="0"
+              allow="encrypted-media">
+            </iframe>
+          </div>
+        `;
+      });
+    }
+
+    // PLAYLISTS
+    if (data.playlists?.items?.length) {
+      html += `<h3>Playlists</h3>`;
+      data.playlists.items.forEach(pl => {
+        html += `
+          <div class="search-card">
+            <strong>${pl.name}</strong>
+            <iframe
+              src="https://open.spotify.com/embed/playlist/${pl.id}"
+              width="100%" height="80"
+              frameborder="0"
+              allow="encrypted-media">
+            </iframe>
+          </div>
+        `;
+      });
+    }
+
+    document.getElementById("searchResults").innerHTML = html;
+
+  }, 500); // debounce
+}
+
+  
+     // PLAYLISTS
   const playlistRes = await fetch("https://api.spotify.com/v1/me/playlists", {
     headers: { Authorization: `Bearer ${token}` }
   });
@@ -124,5 +200,6 @@ async function loadDashboard() {
       </div>
     `).join("");
 }
+
 
 
