@@ -24,9 +24,58 @@
       padding:15px;
       border-radius:10px;
     }
+    <style>
+#searchBox{
+  margin:20px 0;
+}
+#searchInput{
+  width:100%;
+  padding:12px;
+  border-radius:25px;
+  border:none;
+  font-size:15px;
+  outline:none;
+}
+#filters{
+  margin-top:10px;
+}
+#filters button{
+  background:#1db954;
+  border:none;
+  padding:6px 14px;
+  border-radius:20px;
+  margin-right:6px;
+  cursor:pointer;
+  color:black;
+}
+.search-card{
+  background:#181818;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+</style>
+
   </style>
 </head>
 <body>
+  <div id="searchBox">
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search songs or playlists..."
+    oninput="searchSpotifyLive()"
+  />
+
+  <div id="filters">
+    <button onclick="setFilter('all')">All</button>
+    <button onclick="setFilter('track')">Songs</button>
+    <button onclick="setFilter('playlist')">Playlists</button>
+  </div>
+</div>
+
+<div id="searchResults"></div>
+
 
 <div class="profile" id="profile"></div>
 <h2>Your Playlists</h2>
@@ -39,3 +88,4 @@
 
 </body>
 </html>
+
