@@ -99,7 +99,15 @@ async function searchSpotify() {
         resultsDiv.innerHTML = data.tracks.items.map(track => `
             <div class="search-result">
                 <strong>${track.name}</strong> by ${track.artists.map(a => a.name).join(", ")}
-                <br><audio controls src="${track.preview_url}"></audio>
+                <br>
+                <iframe 
+                    src="https://open.spotify.com/embed/track/${track.id}" 
+                    width="300" 
+                    height="80" 
+                    frameborder="0" 
+                    allowtransparency="true" 
+                    allow="encrypted-media">
+                </iframe>
             </div>
         `).join('');
     } else {
@@ -107,8 +115,10 @@ async function searchSpotify() {
     }
 }
 
+
 loadDashboard();
 </script>
 
 </body>
 </html>
+
