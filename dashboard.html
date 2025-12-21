@@ -77,11 +77,46 @@ async function loadDashboard() {
     });
     const playlistsData = await playlistsRes.json();
     const playlistsDiv = document.getElementById("playlists");
+
     playlistsDiv.innerHTML = playlistsData.items.map(p => `
-        <div class="playlist">
+        <div class="playlist" onclick="playPlaylist('${p.id}')">
             <strong>${p.name}</strong> - ${p.tracks.total} tracks
         </div>
     `).join('');
+}
+
+// Play playlist when clicked
+async function playPlaylist(playlistId) {
+    const token = localStorage.getItem("access_token");
+    
+    // Get first 10 tracks of playlist
+    const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=10`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const searchResultsDiv = document.getElementById("searchResults");
+
+    if(data.items?.length) {
+        searchResultsDiv.innerHTML = data.items.map(item => {
+            const track = item.track;
+            return `
+                <div class="search-result">
+                    <strong>${track.name}</strong> by ${track.artists.map(a => a.name).join(", ")}
+                    <br>
+                    <iframe 
+                        src="https://open.spotify.com/embed/track/${track.id}" 
+                        width="300" 
+                        height="80" 
+                        frameborder="0" 
+                        allowtransparency="true" 
+                        allow="encrypted-media">
+                    </iframe>
+                </div>
+            `;
+        }).join('');
+    } else {
+        searchResultsDiv.innerHTML = "<p>No tracks in this playlist.</p>";
+    }
 }
 
 async function searchSpotify() {
@@ -115,10 +150,11 @@ async function searchSpotify() {
     }
 }
 
-
 loadDashboard();
 </script>
 
+
 </body>
 </html>
+
 
