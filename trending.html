@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ECHO MUSE</title>
+<title>Spotify Style Player</title>
 
 <style>
 :root{
@@ -10,13 +10,13 @@
   --nav:#1e1e1e;
   --card:#181818;
   --text:white;
-  --accent:#6b1db9;
+  --accent:#701db9;
 }
 .light{
   --bg:#f5f5f5;
   --nav:#ddd;
   --card:#fff;
-  --text:#000000;
+  --text:#000;
 }
 
 body{
@@ -239,34 +239,79 @@ input[type=range]{cursor:pointer}
 <div class="navbar">
   <h2>ECHO MUSE</h2>
   
-  <!-- Center Nav Links -->
   <div class="nav-center">
-     <a href="index.html" onclick="showSection('My Player')">My Playlist</a>
-    <a href="tophits.html" onclick="showSection('tophits')">Top Hits</a>
-    <a href="trending.html" onclick="showSection('trending')">Trending</a>
-    <a href="Aboutus.html" onclick="showSection('about')">About Us</a>
+    <a href="index.html">My Playlist</a>
+    <a href="tophits.html">Top Hits</a>
+    <a href="trending.html">Trending</a>
+    <a href="Aboutus.html">About Us</a>
+    <a href="playlists.html">Download</a>
   </div>
-
-
-  <div class="toggle" onclick="toggleTheme()">Dark / Light</div>
+  <div style="position:relative;">
+  <input type="text" id="searchInput" placeholder="Search songs..." 
+         style="padding:6px 12px; border-radius:20px; border:none; outline:none; width:200px;">
+  <div id="searchResults" style="
+      position:absolute; top:40px; left:0; width:100%; 
+      background:var(--card); max-height:200px; overflow-y:auto; border-radius:10px; display:none; z-index:10;">
+  </div>
 </div>
+
+<div style="display:flex; gap:12px; align-items:center;">
+  <div class="toggle" onclick="toggleTheme()">Dark / Light</div>
+  <button id="spotifyBtn" onclick="handleSpotifyAuth()"
+    style="background:#1db954;border:none;color:white;
+           padding:8px 16px;border-radius:20px;cursor:pointer;">
+    Login with Spotify
+  </button>
+</div>
+
+</div>
+<script>
+function handleSpotifyAuth() {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    logoutSpotify();
+  } else {
+    login(); // Spotify PKCE login (from spotify.js)
+  }
+}
+
+function logoutSpotify() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("verifier");
+  updateSpotifyButton();
+}
+
+function updateSpotifyButton() {
+  const btn = document.getElementById("spotifyBtn");
+  if (!btn) return;
+
+  const token = localStorage.getItem("access_token");
+  btn.innerText = token ? "Logout Spotify" : "Login with Spotify";
+}
+
+updateSpotifyButton();
+</script>
+
 
 <div class="container">
 
-<div class="sidebar">
-  <h3>Song Info</h3>
-  <p id="songInfo">Select a song</p>
-</div>
+  <div class="sidebar">
+    <h3>Song Info</h3>
+    <p id="songInfo">Select a song</p>
+  </div>
 
-<div>
-<h2>Trending</h2>
-<div class="song-row" id="playlist"></div>
-</div>
+  <div>
+    <h2>Playlist</h2>
+    <div class="song-row" id="playlist"></div>
 
-<div class="sidebar">
-  <h3>Now Playing</h3>
-  <img id="nowImg">
-</div>
+    <h2>Other Playlists</h2>
+    <div class="song-row" id="otherPlaylists"></div>
+  </div>
+
+  <div class="sidebar">
+    <h3>Now Playing</h3>
+    <img id="nowImg">
+  </div>
 
 </div>
 
@@ -302,7 +347,6 @@ input[type=range]{cursor:pointer}
 </div>
 
 <audio id="audio"></audio>
-
 <script>
 const songs=[
  {title:"Tum Mohabbat",src:"songs/Tu Mohabbat.mp3",img:"images/Tumuhabbat.webp"},
