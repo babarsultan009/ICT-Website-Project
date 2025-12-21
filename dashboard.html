@@ -5,7 +5,7 @@
   <style>
     body {
       background:#121212;
-      color:white;
+      color:rgb(86, 0, 161);
       font-family:Arial;
       padding:20px;
     }
@@ -18,75 +18,97 @@
       border-radius:50%;
       width:80px;
     }
-    .playlist {
+    .playlist, .search-result {
       margin-top:20px;
       background:#181818;
       padding:15px;
       border-radius:10px;
     }
-    <style>
-#searchBox{
-  margin:20px 0;
-}
-#searchInput{
-  width:100%;
-  padding:12px;
-  border-radius:25px;
-  border:none;
-  font-size:15px;
-  outline:none;
-}
-#filters{
-  margin-top:10px;
-}
-#filters button{
-  background:#1db954;
-  border:none;
-  padding:6px 14px;
-  border-radius:20px;
-  margin-right:6px;
-  cursor:pointer;
-  color:black;
-}
-.search-card{
-  background:#181818;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
-}
-</style>
-
+    input[type="text"] {
+      padding:8px;
+      width:250px;
+      border-radius:5px;
+      border:none;
+      margin-right:10px;
+    }
+    button {
+      padding:8px 12px;
+      border:none;
+      border-radius:5px;
+      background:rgb(86, 0, 161);
+      color:white;
+      cursor:pointer;
+    }
   </style>
 </head>
 <body>
-  <div id="searchBox">
-  <input
-    type="text"
-    id="searchInput"
-    placeholder="Search songs or playlists..."
-    oninput="searchSpotifyLive()"
-  />
 
-  <div id="filters">
-    <button onclick="setFilter('all')">All</button>
-    <button onclick="setFilter('track')">Songs</button>
-    <button onclick="setFilter('playlist')">Playlists</button>
-  </div>
-</div>
+<div class="profile" id="profile"></div>
+
+<h2>Search Spotify Songs</h2>
+<input type="text" id="searchInput" placeholder="Search for a song...">
+<button onclick="searchSpotify()">Search</button>
 
 <div id="searchResults"></div>
 
-
-<div class="profile" id="profile"></div>
-<h2>More Playlists</h2>
+<h2>Your Playlists</h2>
 <div id="playlists"></div>
 
 <script src="spotify.js"></script>
 <script>
-  loadDashboard();
+async function loadDashboard() {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    // PROFILE
+    const profileRes = await fetch("https://api.spotify.com/v1/me", {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    const profile = await profileRes.json();
+    const profileDiv = document.getElementById("profile");
+    profileDiv.innerHTML = `
+        <img src="${profile.images?.[0]?.url || 'https://via.placeholder.com/80'}" alt="Profile">
+        <h3>${profile.display_name}</h3>
+    `;
+
+    // PLAYLISTS
+    const playlistsRes = await fetch("https://api.spotify.com/v1/me/playlists", {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    const playlistsData = await playlistsRes.json();
+    const playlistsDiv = document.getElementById("playlists");
+    playlistsDiv.innerHTML = playlistsData.items.map(p => `
+        <div class="playlist">
+            <strong>${p.name}</strong> - ${p.tracks.total} tracks
+        </div>
+    `).join('');
+}
+
+async function searchSpotify() {
+    const query = document.getElementById("searchInput").value;
+    if (!query) return alert("Please enter a search term.");
+
+    const token = localStorage.getItem("access_token");
+    const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const resultsDiv = document.getElementById("searchResults");
+    
+    if(data.tracks?.items?.length) {
+        resultsDiv.innerHTML = data.tracks.items.map(track => `
+            <div class="search-result">
+                <strong>${track.name}</strong> by ${track.artists.map(a => a.name).join(", ")}
+                <br><audio controls src="${track.preview_url}"></audio>
+            </div>
+        `).join('');
+    } else {
+        resultsDiv.innerHTML = "<p>No results found.</p>";
+    }
+}
+
+loadDashboard();
 </script>
 
 </body>
 </html>
-
-
